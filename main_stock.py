@@ -5,6 +5,7 @@ from component.naverstock import getNaverThemDtl
 from component.naverstock import getStockDtl
 from component import getFileSum
 from component.stockanalysis import daily_analysis_stocks
+from component.naverstock import getStockChart
 # from file_manager import FileManager
 import datetime, time
 import pandas as pd
@@ -90,12 +91,17 @@ def stockDtl():
 def fileSum():
     getFileSum.getFileSum()
 
+def stockChart():
+    getStockChart.generate_chart_urls()
+
 if __name__ == '__main__':
     # call function
-    krxStockList()
-    krxStockList100()
-    naverTheme()
-    naverThemeDtl()
-    stockDtl()
-    fileSum()
-    daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
+    # krxStockList()
+    # krxStockList100()
+    # naverTheme()
+    # naverThemeDtl()
+    # stockDtl()
+    # daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
+    # fileSum()
+    stockChart() # stock chart
+    
