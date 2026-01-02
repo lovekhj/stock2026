@@ -25,7 +25,6 @@ def naverTheme():
     # 모든 페이지의 데이터 수집
     all_themes_data = []
     for page in range(1, 9):  # 1페이지부터 8페이지까지
-    # for page in range(1, 2):  # 1페이지부터 8페이지까지
         page_data = getNaverTheme.get_theme_data(page)
         all_themes_data.extend(page_data)
         time.sleep(1)  # 서버 부하 방지를 위한 지연
@@ -93,10 +92,10 @@ def fileSum():
 
 if __name__ == '__main__':
     # call function
-    # krxStockList()
-    # krxStockList100()
-    daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
-    # naverTheme()
-    # naverThemeDtl()
-    # stockDtl()
+    krxStockList()
+    krxStockList100()
+    naverTheme()
+    naverThemeDtl()
+    stockDtl()
     fileSum()
+    daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상

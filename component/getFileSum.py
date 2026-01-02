@@ -30,7 +30,7 @@ def getFileSum():
     # 각 CSV 파일 읽기
     try:
         # KRX 주식 목록 읽기 (필요한 컬럼만 선택)
-        krx_df = pd.read_csv(krx_file, usecols=['종목코드', '종목명', '시장구분', '상장주식수'])
+        krx_df = pd.read_csv(krx_file, usecols=['종목코드', '종목명', '시장구분', '상장주식수', '고가','저가','종가', '등락률'])
         
         # 테마 목록 읽기
         theme_df = pd.read_csv(theme_file)

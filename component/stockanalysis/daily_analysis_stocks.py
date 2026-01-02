@@ -35,19 +35,27 @@ def analyze_stocks_with_themes():
         df_krx['종목코드'] = df_krx['종목코드'].astype(str).str.zfill(6)
         df_themes['종목코드'] = df_themes['종목코드'].astype(str).str.zfill(6)
         
-        # 3. 데이터 필터링 (등락률 15% 이상 또는 거래대금 500억 이상)
+        # 3. 데이터 필터링
+        # 조건: 1. 등락률 15% 이상  OR  2. (거래대금 500억 이상 AND 변동폭 6% 이상)
         min_fluctuation_rate = 15
         min_trading_amount = 50_000_000_000
-        
-        # df_krx_filtered = df_krx[
-        #     (df_krx['등락률'] >= min_fluctuation_rate) | 
-        #     (df_krx['거래대금'] >= min_trading_amount)
-        # ]
+        min_range_rate = 6
+
+        # 변동폭(%) 계산: (고가 - 저가) / 저가 * 100
+        # 저가가 0인 경우(거래정지 등) 0으로 처리하여 오류 방지
+        df_krx['변동폭'] = 0.0
+        mask_valid = df_krx['저가'] > 0
+        df_krx.loc[mask_valid, '변동폭'] = (df_krx.loc[mask_valid, '고가'] - df_krx.loc[mask_valid, '저가']) / df_krx.loc[mask_valid, '저가'] * 100
+
         df_krx_filtered = df_krx[
-            (df_krx['등락률'] >= min_fluctuation_rate) &
-            (df_krx['거래대금'] >= min_trading_amount)
+            (df_krx['등락률'] >= min_fluctuation_rate) | 
+            (
+                (df_krx['거래대금'] >= min_trading_amount) &
+                (df_krx['변동폭'] >= min_range_rate)
+            )
         ]
-        print(f"\n필터링 적용: 등락률 {min_fluctuation_rate}% 이상 또는 거래대금 {min_trading_amount/1e8:.0f}억 이상")
+        
+        print(f"\n필터링 적용: 1. 등락률 {min_fluctuation_rate}% 이상 OR 2. (거래대금 {min_trading_amount/1e8:.0f}억 이상 AND 변동폭 {min_range_rate}% 이상)")
         print(f"필터링 전 {len(df_krx)}개 종목 -> 필터링 후 {len(df_krx_filtered)}개 종목")
 
         # 4. 데이터 병합 (필터링된 종목만 대상으로)
