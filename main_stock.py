@@ -14,7 +14,8 @@ from common import file_manager, get_daily_folder_path, get_today_str, get_last_
 # file_manager = FileManager()
 
 def krxStockList():
-    getKrxStockList.get_krx_stock_list()
+    getKrxStockList.selenium_get_file()
+    # getKrxStockList.get_krx_stock_list()
     # getKrxStockList.test_file()
 
 def krxStockList100():
@@ -98,12 +99,12 @@ def stockChart():
 
 if __name__ == '__main__':
     # call function
-    ##### krxStockList()  # csv file down 막힘
+    krxStockList()  # csv file down 막힘
     # krxStockList100()
     # naverTheme()
     # naverThemeDtl()
     # stockDtl()
     # daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
-    fileSum()
-    stockChart() # stock chart
+    # fileSum()
+    # stockChart() # stock chart
     

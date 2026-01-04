@@ -2,16 +2,160 @@ from io import BytesIO
 import requests
 import json
 import pandas as pd
-# import datetime
 import time
 import os
-# from file_manager import FileManager
 from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path, KRX_DATA_DOWNLOAD_URL, KRX_OTP_GENERATE_URL, DEFAULT_HEADERS
+import pyperclip
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+import glob
 
 # 미리셋팅
 # pip install requests pandas
 
-# file_manager = FileManager()
+def selenium_get_file():
+
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
+
+
+    # ====== 크롬 옵션 설정 ======
+    options = Options()
+    # 2. 브라우저 꺼짐 방지 옵션 추가 (이게 핵심!)
+    options.add_experimental_option("detach", True)
+
+    # 크롬 창을 최대화해서 실행
+    # options.add_argument("--start-maximized")
+
+    # ====== 크롬 브라우저 실행 ======
+    driver = webdriver.Chrome(options=options)
+
+    # 최대 10초까지 요소가 나타날 때까지 기다리기 위한 객체
+    # wait = WebDriverWait(driver, 10)
+    # 요소를 찾을 때 최대 10초까지는 에러를 내지 않고 기다려줍니다.
+    driver.implicitly_wait(10)
+
+
+    # ====== KRX 메인(로그인 기능 포함) 페이지 접속 ======
+    driver.get("https://data.krx.co.kr/contents/MDC/COMS/client/MDCCOMS001.cmd")
+    # driver.get("https://data.krx.co.kr/contents/MDC/MAIN/main/index.cmd")
+
+    driver.implicitly_wait(5)
+
+    # 1. iframe 요소를 먼저 찾습니다. (ID 사용)
+    iframe_element = driver.find_element(By.CSS_SELECTOR, "#COMS001_FRAME")
+
+    # 2. 해당 iframe 안으로 운전대를 꺾습니다. (포커스 전환)
+    driver.switch_to.frame(iframe_element)
+
+    #  === 아이디 입력 (붙여넣기) ===
+    user_id = "lostjack"
+    user_pw = "krxdlatl001!@"
+
+    id_input = driver.find_element(By.ID, "mbrId")
+    id_input.clear()
+    id_input.click()
+    time.sleep(1)
+    pyperclip.copy(user_id)
+    id_input.send_keys(Keys.COMMAND, "v")
+    time.sleep(2)
+
+    # === 비밀번호 입력 (붙여넣기) ===
+    pw_input = driver.find_element(By.NAME, "pw")
+    pw_input.clear()
+    pw_input.click()
+    time.sleep(1)
+    pyperclip.copy(user_pw)
+    pw_input.send_keys(Keys.COMMAND, "v")
+    time.sleep(2)
+
+    # 로그인 버튼 클릭
+
+    # ====== 2단계 로그인 버튼 클릭 (실제 로그인 요청) ======
+    # 로그인 창 안에 있는 진짜 로그인 버튼
+    submit_login_btn = driver.find_element(By.CSS_SELECTOR, "a.jsLoginBtn")
+    submit_login_btn.click()
+    time.sleep(5)
+
+    # ====== (선택) 브라우저 종료 ======
+    # driver.quit()
+
+    # 화면이동
+    url = 'https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020101'
+    driver.get(url)
+    driver.implicitly_wait(10)
+
+    # 조회일자 넣기
+    # tradingday
+
+    search_btn = driver.find_element(By.ID, "jsSearchButton")
+    time.sleep(1)
+    search_btn.click()
+    time.sleep(3)
+
+    download_btn = driver.find_element(By.CSS_SELECTOR, "button.CI-MDI-UNIT-DOWNLOAD")
+    time.sleep(1)
+    download_btn.click()
+    time.sleep(3)
+
+    # 팝업 로딩후
+    # all_handles = driver.window_handles
+    # driver.switch_to.window(all_handles[-1])
+
+    # 3. CSV 버튼이 나타날 때까지 대기 후 클릭
+    try:
+        # 텍스트 'CSV'를 포함한 버튼 찾기
+        csv_link = driver.find_element(By.XPATH, "//a[contains(., 'CSV')]")
+        csv_link.click()
+        print("CSV 다운로드 시작!")
+    except Exception as e:
+        print(f"클릭 실패: {e}")
+
+    # 4. 다운로드가 끝나고 팝업을 닫고 싶다면?
+    # driver.close() # 현재 팝업창만 닫기
+    # driver.switch_to.window(all_handles[0]) # 다시 메인 창으로 복귀        
+
+    time.sleep(5)
+
+    file_path = get_latest_file()
+    file_name = os.path.basename(file_path)
+
+    print(f"방금 다운로드된 파일의 전체 경로: {file_path}")
+    print(f"파일명만 추출: {file_name}")    
+
+    # file move
+
+    logout_btn = driver.find_element(By.ID, "jsLogoutBtn")    
+    logout_btn.click()
+    time.sleep(2)
+
+    driver.quit()
+
+
+def get_latest_file():
+    # 1. 사용자의 다운로드 폴더 경로 설정 (윈도우 기준)
+    # download_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+    download_path = os.path.join('/Users/hyunjongkim', 'Downloads')
+    
+    # 2. 폴더 내의 모든 파일 목록을 가져옴 (*.csv 등 확장자 지정 가능)
+    files = glob.glob(os.path.join(download_path, '*.csv'))
+    
+    if not files:
+        return None
+    
+    # 3. 생성 시간 기준 가장 최신 파일을 찾음
+    latest_file = max(files, key=os.path.getctime)
+    return latest_file
+
+
 
 def get_krx_stock_list():
     """
@@ -26,17 +170,11 @@ def get_krx_stock_list():
     print("*" * 80)
     print("KRX 주식시장의 전종목 시세를 가져오는 함수")
     print("*" * 80)
-    
-    # 1. 세션 객체 생성
-    session = requests.Session()
+    #  selenium login
+    # selenium_get_file()
 
     # 2. 로그인 수행 (로그인 페이지 URL과 데이터 필요)
-    login_url = "https://data.krx.co.kr/contents/MDC/COMS/client/MDCCOMS001.cmd" # 실제 로그인 처리 URL 확인 필요
-    login_data = {
-        'loginId': 'lostjack',
-        'password': 'krxdlatl001!@'
-    }
-    session.post(login_url, data=login_data)
+    # login_url = "https://data.krx.co.kr/contents/MDC/COMS/client/MDCCOMS001.cmd" # 실제 로그인 처리 URL 확인 필요
 
     # 오늘 날짜 생성 (YYYYMMDD 형식)
     # get_today_str() 함수를 통해 오늘 날짜를 문자열로 가져옵니다.
@@ -88,8 +226,7 @@ def get_krx_stock_list():
 
         # OTP 코드를 담아 POST 요청을 보냅니다.
         # 이제 session은 로그인 쿠키를 기억하고 있습니다.
-        down_csv = session.post(down_url, data=down_data, headers=down_headers)
-        # down_csv = requests.post(down_url, data=down_data, headers=down_headers)
+        down_csv = requests.post(down_url, data=down_data, headers=down_headers)
         down_csv.raise_for_status()
         print("데이터 다운로드 완료")
         time.sleep(1.0)
