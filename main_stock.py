@@ -9,12 +9,13 @@ from component.naverstock import getStockChart
 # from file_manager import FileManager
 import datetime, time
 import pandas as pd
-from common import file_manager, get_daily_folder_path, get_today_str
+from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path
 
 # file_manager = FileManager()
 
 def krxStockList():
     getKrxStockList.get_krx_stock_list()
+    # getKrxStockList.test_file()
 
 def krxStockList100():
     getKrxStockList.get_krx_100()  
@@ -34,16 +35,15 @@ def naverTheme():
     for item in all_themes_data:
         print(item)
 
-    # 오늘 날짜 생성 (YYYYMMDD 형식)
-    # today = datetime.datetime.now().strftime("%Y%m%d")
-    today = get_today_str()
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
 
-    # 폴더 만들기
-    # folder_path = file_manager.make_folder(today)
-    folder_path = get_daily_folder_path()
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
 
     # CSV 파일로 저장
-    output_filename = f'naver_themes_list_{today}.csv'
+    output_filename = f'naver_themes_list_{tradingday}.csv'
     
     # 동일 파일 삭제
     file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
@@ -54,13 +54,15 @@ def naverTheme():
     print(f"데이터가 {output_filename}로 저장되었습니다.")
 
 def naverThemeDtl():
-    getNaverThemDtl.main()
+    getNaverThemDtl.naverThemeDtl()
 
 def stockDtl():
-    # 오늘 날짜 생성 (YYYYMMDD 형식)
-    today = datetime.datetime.now().strftime("%Y%m%d")
-    # 폴더 만들기
-    folder_path = file_manager.make_folder(today)
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
 
     all_stocks_data  = []
     # url = "https://finance.naver.com/sise/sise_market_sum.naver?sosok=0&page=4"
@@ -78,7 +80,7 @@ def stockDtl():
             time.sleep(1)
 
     # CSV 파일로 저장
-    output_filename = f'stock_dtl_list_{today}.csv'
+    output_filename = f'stock_dtl_list_{tradingday}.csv'
 
     # 동일 파일 삭제
     file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
@@ -96,12 +98,12 @@ def stockChart():
 
 if __name__ == '__main__':
     # call function
-    # krxStockList()
+    ##### krxStockList()  # csv file down 막힘
     # krxStockList100()
     # naverTheme()
     # naverThemeDtl()
     # stockDtl()
     # daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
-    # fileSum()
+    fileSum()
     stockChart() # stock chart
     

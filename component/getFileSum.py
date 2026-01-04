@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import datetime
-from common import file_manager, get_daily_folder_path, get_today_str
+from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path
 
 
 
@@ -10,20 +10,24 @@ from common import file_manager, get_daily_folder_path, get_today_str
 
 
 def getFileSum():
-    today = get_today_str()
-    folder_path = get_daily_folder_path()
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
     # CSV 파일로 저장
-    output_filename = f'total_{today}.xlsx'
+    output_filename = f'total_{tradingday}.xlsx'
     
     # 동일 파일 삭제
     file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
 
     # 파일 경로 설정
-    krx_file = folder_path + f'/krx_stock_list_{today}.csv'
-    theme_file = folder_path + f'/naver_themes_list_{today}.csv'
-    theme_dtl_file = folder_path + f'/naver_themes_dtl_list_{today}.csv'
-    stock_dtl_file = folder_path + f'/stock_dtl_list_{today}.csv'
-    stock_analysis = folder_path + f'/00_stock_analysis_pivoted_{today}.xlsx'
+    krx_file = folder_path + f'/krx_stock_list_{tradingday}.csv'
+    theme_file = folder_path + f'/naver_themes_list_{tradingday}.csv'
+    theme_dtl_file = folder_path + f'/naver_themes_dtl_list_{tradingday}.csv'
+    stock_dtl_file = folder_path + f'/stock_dtl_list_{tradingday}.csv'
+    stock_analysis = folder_path + f'/00_stock_analysis_pivoted_{tradingday}.xlsx'
 
 
     # 각 CSV 파일 읽기

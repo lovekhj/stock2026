@@ -5,7 +5,7 @@ import os
 import time
 import sys
 
-from common import file_manager, get_daily_folder_path, get_today_str
+from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str, get_trading_day_folder_path
 
 # -----------------------------------------------------------------------------------------
 # [교육용 주석: 네이버 금융 시가총액 정보 크롤링]
@@ -101,8 +101,12 @@ def stockDtl():
     print("="*50)
     
     # 1. 날짜 및 경로 설정 (common 모듈 사용)
-    today = get_today_str()
-    folder_path = get_daily_folder_path()
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
 
     all_stocks_data  = []
     
@@ -129,7 +133,7 @@ def stockDtl():
             time.sleep(0.5) # 서버 부하 방지
 
     # 3. 결과 저장
-    output_filename = f'stock_dtl_list_{today}.csv'
+    output_filename = f'stock_dtl_list_{tradingday}.csv'
     save_path = os.path.join(folder_path, output_filename)
 
     # 동일 파일 삭제

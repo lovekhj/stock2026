@@ -5,20 +5,27 @@ import sys
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from collections import Counter
-from common import get_daily_folder_path, get_today_str
+from common import get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path 
 
 def analyze_stocks_with_themes():
     """
     KRX 주식 목록 데이터와 네이버 테마 상세 데이터를 병합하여
     각 종목에 해당하는 테마 정보를 추가하고 결과를 파일로 저장합니다.
     """
-    today_str = get_today_str()
-    daily_folder_path = get_daily_folder_path()
+    # today_str = get_today_str()
+    # daily_folder_path = get_daily_folder_path()
+
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
 
     # 1. 파일 경로 설정
-    krx_stock_filepath = os.path.join(daily_folder_path, f'krx_stock_list_{today_str}.xlsx')
-    naver_themes_dtl_filepath = os.path.join(daily_folder_path, f'naver_themes_dtl_list_{today_str}.csv')
-    output_filepath = os.path.join(daily_folder_path, f'00_stock_analysis_stocks_{today_str}.xlsx')
+    krx_stock_filepath = os.path.join(folder_path, f'krx_stock_list_{tradingday}.xlsx')
+    naver_themes_dtl_filepath = os.path.join(folder_path, f'naver_themes_dtl_list_{tradingday}.csv')
+    output_filepath = os.path.join(folder_path, f'00_stock_analysis_stocks_{tradingday}.xlsx')
 
     try:
         # 2. 데이터 로드
@@ -120,7 +127,7 @@ def analyze_stocks_with_themes():
         output_df = final_df[final_output_cols]
 
         # 7. 재구성 및 정렬된 데이터 저장
-        pivoted_output_filepath = os.path.join(daily_folder_path, f'00_stock_analysis_pivoted_{today_str}.xlsx')
+        pivoted_output_filepath = os.path.join(folder_path, f'00_stock_analysis_pivoted_{tradingday}.xlsx')
 
         # --- 추가 로직 적용 ---
         # 1. 거래대금 억원 단위로 변환

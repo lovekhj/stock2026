@@ -14,6 +14,11 @@ def get_daily_folder_path():
     today = get_today_str()
     return file_manager.make_folder(today)
 
+def get_trading_day_folder_path():
+    """trading day 폴더의 경로를 반환하고, 필요하면 생성합니다."""
+    today = get_last_trading_day_str()
+    return file_manager.make_folder(today)
+
 def get_last_trading_day_str():
     """
     가장 최근의 평일(월-금)을 찾아 'YYYYMMDD' 형식의 문자열로 반환합니다.

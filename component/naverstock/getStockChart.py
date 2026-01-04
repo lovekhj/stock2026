@@ -8,7 +8,7 @@ import time
 # User requested removing sys.path hacks, so I will assume running as module.
 # However, for safety in this new file, I will rely on standard imports.
 
-from common import file_manager, get_daily_folder_path, get_today_str
+from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path
 from component.excel_utils import auto_adjust_column_width
 
 # -----------------------------------------------------------------------------------------
@@ -28,11 +28,15 @@ def generate_chart_urls():
     print("="*50)
 
     # 1. 날짜 및 경로 설정
-    today = get_today_str()
-    folder_path = get_daily_folder_path()
+    # 거래일자 설정
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
     
     # 2. 입력 파일 확인 (total_YYYYMMDD.xlsx)
-    input_filename = f'total_{today}.xlsx'
+    input_filename = f'total_{tradingday}.xlsx'
     input_filepath = os.path.join(folder_path, input_filename)
     
     if not os.path.exists(input_filepath):
@@ -76,7 +80,7 @@ def generate_chart_urls():
         
     # 5. 결과 저장
     output_df = pd.DataFrame(chart_data)
-    output_filename = f'naver_stock_chart_{today}.xlsx'
+    output_filename = f'naver_stock_chart_{tradingday}.xlsx'
     output_filepath = os.path.join(folder_path, output_filename)
     
     # 기존 파일 삭제
