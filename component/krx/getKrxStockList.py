@@ -58,7 +58,7 @@ def selenium_get_file():
 
     #  === 아이디 입력 (붙여넣기) ===
     user_id = "lostjack"
-    user_pw = "krxdlatl001!@"
+    user_pw = "krx"
 
     id_input = driver.find_element(By.ID, "mbrId")
     id_input.clear()
