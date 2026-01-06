@@ -3,12 +3,6 @@ import os
 import datetime
 from common import file_manager, get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path
 
-
-
-# pip install openpyxl
-
-
-
 def getFileSum():
     # 거래일자 설정
     # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
@@ -23,7 +17,9 @@ def getFileSum():
     file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
 
     # 파일 경로 설정
+    print("aaaaa")
     krx_file = folder_path + f'/krx_stock_list_{tradingday}.csv'
+    krx_100_file = folder_path + f'/krx_top_100_{tradingday}.csv'
     theme_file = folder_path + f'/naver_themes_list_{tradingday}.csv'
     theme_dtl_file = folder_path + f'/naver_themes_dtl_list_{tradingday}.csv'
     stock_dtl_file = folder_path + f'/stock_dtl_list_{tradingday}.csv'
@@ -35,6 +31,8 @@ def getFileSum():
         # KRX 주식 목록 읽기 (필요한 컬럼만 선택)
         krx_df = pd.read_csv(krx_file, usecols=['종목코드', '종목명', '시장구분', '상장주식수', '고가','저가','종가', '등락률'])
         
+        krx_100_df = pd.read_csv(krx_100_file)
+
         # 테마 목록 읽기
         theme_df = pd.read_csv(theme_file)
         
@@ -48,7 +46,7 @@ def getFileSum():
         stock_analysis_df = pd.read_excel(stock_analysis)
         
         # 거래대금 억원 단위로 변환
-        stock_analysis_df['거래대금'] = (stock_analysis_df['거래대금'] / 100000000).round(1)
+        # stock_analysis_df['거래대금'] = (stock_analysis_df['거래대금'] / 100000000).round(1)
         
         # 정렬: 선정사유(오름차순), 거래대금(내림차순)
         stock_analysis_df = stock_analysis_df.sort_values(by=['선정사유', '거래대금'], ascending=[True, False])
@@ -65,6 +63,7 @@ def getFileSum():
             stock_analysis_df.to_excel(writer, sheet_name='종목분석', index=False)
             theme_summary_df.to_excel(writer, sheet_name='테마별분석', index=False)
             krx_df.to_excel(writer, sheet_name='주식종목', index=False)
+            krx_100_df.to_excel(writer, sheet_name='거래상위100종목', index=False)
             stock_dtl_df.to_excel(writer, sheet_name='주식종목상세', index=False)
             theme_df.to_excel(writer, sheet_name='테마', index=False)
             theme_dtl_df.to_excel(writer, sheet_name='테마상세', index=False)

@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import sys
 import time
-
+from natsort import natsorted
 # 프로젝트 루트 디렉토리를 Python 경로에 추가하여 'common' 모듈을 임포트할 수 있도록 함
 # (만약 모듈로 실행 시 불필요하지만, 단독 실행 편의성을 위해 남겨두거나, user 요청대로 삭제했다면 common import만 유지)
 # User requested removing sys.path hacks, so I will assume running as module.

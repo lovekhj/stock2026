@@ -132,12 +132,39 @@ def selenium_get_file():
     print(f"파일명만 추출: {file_name}")    
 
     # file move
+    file_move(file_path, file_name)
 
     logout_btn = driver.find_element(By.ID, "jsLogoutBtn")    
     logout_btn.click()
     time.sleep(2)
+  
 
     driver.quit()
+
+
+def file_move(filePath, fileNm):
+    # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
+    tradingday = get_last_trading_day_str()
+
+    # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
+    folder_path = get_trading_day_folder_path()
+    
+    # temp -----start
+    df = pd.read_csv(filePath , encoding='EUC-KR')
+    # 저장할 파일 이름 설정
+    output_filename = f'krx_stock_list_{tradingday}.csv'
+    output_excel_filename = f'krx_stock_list_{tradingday}.xlsx'
+    
+    # 혹시 같은 이름의 파일이 이미 있다면 삭제하여 충돌 방지
+    file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
+
+    # CSV와 Excel 두 가지 형식으로 저장합니다.
+    # utf-8-sig 인코딩을 사용하면 엑셀에서 한글이 깨지지 않고 잘 열립니다.
+    df.to_csv(folder_path+'/'+ output_filename, index=False, encoding='utf-8-sig')
+    df.to_excel(folder_path+'/'+ output_excel_filename, index=False)
+    print(f"데이터가 {output_filename}로 저장되었습니다.")
+    print(f"데이터가 {output_excel_filename}로 저장되었습니다.")
+    # temp -----end
 
 
 def get_latest_file():
@@ -273,20 +300,8 @@ def get_krx_100():
     # 데이터 저장 폴더 경로 가져오기 (없으면 생성)
     folder_path = get_trading_day_folder_path()
     
-    # temp -----start
-    df = pd.read_csv(folder_path +'/'+ f'data_1744_20260104.csv', encoding='EUC-KR')
-    # 저장할 파일 이름 설정
-    output_excel_filename = f'krx_stock_list_{tradingday}.xlsx'
-    df.to_excel(folder_path+'/'+ output_excel_filename, index=False)
-    print(f"데이터가 {output_excel_filename}로 저장되었습니다.")
-    # temp -----end
-
-
     # 1. 저장된 엑셀 파일 읽어오기
     krx_file = folder_path +'/'+ f'krx_stock_list_{tradingday}.xlsx'
-
-    print("krx_file ==>", krx_file)
-    print("krx_file ==>", krx_file)
 
     df = pd.read_excel(krx_file)
     print(df.columns)
@@ -304,9 +319,13 @@ def get_krx_100():
     # 종목명이 같은 것끼리 연결합니다.
     top_inter = pd.merge(top_volume, top_change, how='inner', on='종목명')
     
-    # 파일 저장
+    # excel 파일 저장
     output_excel_filename = f'krx_top_100_{tradingday}.xlsx'
     file_manager.check_and_delete_file(folder_path+'/'+ output_excel_filename)
+
+    # csv 파일 저장
+    output_csv_filename = f'krx_top_100_{tradingday}.csv'
+    file_manager.check_and_delete_file(folder_path+'/'+ output_csv_filename)
     
     # 종목코드가 중복되어 _x 등의 접미사가 붙을 수 있으므로 이름 정리
     top_inter = top_inter.rename(columns={'종목코드_x': '종목코드'})
@@ -314,6 +333,7 @@ def get_krx_100():
     
     # 필요한 컬럼만 선택하여 저장
     top_inter[col_to_save].to_excel(folder_path+'/'+ output_excel_filename, index=False)
+    top_inter[col_to_save].to_csv(folder_path+'/'+ output_csv_filename, index=False, encoding='utf-8-sig')
 
 
 def test_file():

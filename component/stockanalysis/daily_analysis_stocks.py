@@ -6,6 +6,7 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from collections import Counter
 from common import get_daily_folder_path, get_today_str, get_last_trading_day_str,get_trading_day_folder_path 
+from natsort import natsorted
 
 def analyze_stocks_with_themes():
     """
@@ -54,7 +55,7 @@ def analyze_stocks_with_themes():
 
         # 조건별 마스크 생성
         mask_fluctuation = df_krx['등락률'] >= min_fluctuation_rate
-        mask_transaction = (df_krx['거래대금'] >= min_trading_amount) & (df_krx['변동폭'] >= min_range_rate)
+        mask_transaction = (df_krx['거래대금'] >= min_trading_amount) & (df_krx['변동폭'] >= min_range_rate) & (df_krx['등락률'] > 0)
 
         # 선정사유 컬럼 추가
         # 기본적으로 None 또는 빈 문자열
@@ -116,8 +117,9 @@ def analyze_stocks_with_themes():
         # 6. 최종 컬럼 선택 및 순서 재정렬
         # 선정사유 컬럼 추가
         base_cols = ['종목코드', '종목명', '선정사유', '시장구분','종가','고가','저가','등락률','거래량','거래대금']
-        theme_cols = sorted([col for col in final_df.columns if col.startswith('테마_')])
-        
+        # theme_cols = sorted([col for col in final_df.columns if col.startswith('테마_')])
+        theme_cols = natsorted([col for col in final_df.columns if col.startswith('테마_')])
+
         # 최종적으로 저장할 컬럼 리스트
         final_output_cols = base_cols + theme_cols
         
