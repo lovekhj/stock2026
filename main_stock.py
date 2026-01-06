@@ -99,6 +99,6 @@ if __name__ == '__main__':
     naverThemeDtl()
     stockDtl()
     daily_analysis_stock()  # 전일대비 15%, 거래대금500억이상
-    fileSum()
     stockChart() # stock chart
+    fileSum()
     

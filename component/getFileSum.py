@@ -17,13 +17,13 @@ def getFileSum():
     file_manager.check_and_delete_file(folder_path+'/'+ output_filename)
 
     # 파일 경로 설정
-    print("aaaaa")
     krx_file = folder_path + f'/krx_stock_list_{tradingday}.csv'
     krx_100_file = folder_path + f'/krx_top_100_{tradingday}.csv'
     theme_file = folder_path + f'/naver_themes_list_{tradingday}.csv'
     theme_dtl_file = folder_path + f'/naver_themes_dtl_list_{tradingday}.csv'
     stock_dtl_file = folder_path + f'/stock_dtl_list_{tradingday}.csv'
     stock_analysis = folder_path + f'/00_stock_analysis_pivoted_{tradingday}.xlsx'
+    stock_url = folder_path + f'/naver_stock_chart_{tradingday}.xlsx'
 
 
     # 각 CSV 파일 읽기
@@ -42,6 +42,9 @@ def getFileSum():
         # 종목 상세 목록 읽기
         stock_dtl_df = pd.read_csv(stock_dtl_file)
 
+        # url 
+        stock_url_df = pd.read_excel(stock_url)
+
         # 등락률 15% 이상 & 거래대금 500억 이상
         stock_analysis_df = pd.read_excel(stock_analysis)
         
@@ -51,6 +54,7 @@ def getFileSum():
         # 정렬: 선정사유(오름차순), 거래대금(내림차순)
         stock_analysis_df = stock_analysis_df.sort_values(by=['선정사유', '거래대금'], ascending=[True, False])
         
+
         # 테마별 요약 정보 생성 (excel_utils 모듈 사용)
         # create_theme_summary 함수는 '테마' 컬럼을 기준으로 종목 수를 세어 반환합니다.
         from component.excel_utils import create_theme_summary, apply_conditional_formatting, auto_adjust_column_width
@@ -67,6 +71,7 @@ def getFileSum():
             stock_dtl_df.to_excel(writer, sheet_name='주식종목상세', index=False)
             theme_df.to_excel(writer, sheet_name='테마', index=False)
             theme_dtl_df.to_excel(writer, sheet_name='테마상세', index=False)
+            stock_url_df.to_excel(writer, sheet_name='url차트', index=False)
 
             # --- 엑셀 서식 적용 (공통 유틸리티 사용) ---
             
