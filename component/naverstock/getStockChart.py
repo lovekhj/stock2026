@@ -36,7 +36,8 @@ def generate_chart_urls():
     folder_path = get_trading_day_folder_path()
     
     # 2. 입력 파일 확인 (total_YYYYMMDD.xlsx)
-    input_filename = f'total_{tradingday}.xlsx'
+    # input_filename = f'total_{tradingday}.xlsx'
+    input_filename = f'00_stock_analysis_pivoted_{tradingday}.xlsx'
     input_filepath = os.path.join(folder_path, input_filename)
     
     if not os.path.exists(input_filepath):
