@@ -13,11 +13,33 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import glob
+import json
 
 # 미리셋팅
 # pip install requests pandas
 
+
+def load_config():
+    # 현재 실행 중인 파일의 경로를 기준으로 설정 파일 경로를 잡습니다.
+    # 만약 특정 폴더(예: secret 폴더)에 있다면 'secret/config.json'으로 수정하세요.
+    config_path = 'config.json'
+    
+    # 파일이 있는지 먼저 확인 (에러 방지)
+    if not os.path.exists(config_path):
+        print(f"에러: {config_path} 파일이 없습니다!")
+        return None
+
+    # 파일 읽기
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    
+    return config
+
 def selenium_get_file():
+
+    config = load_config()
+    user_id = config['user_id']
+    user_pw = config['user_pw']
 
     # 거래일자 설정
     # 주말에는 장이 열리지 않으므로, 가장 최근 평일(거래일)을 계산해서 가져옵니다.
@@ -57,9 +79,6 @@ def selenium_get_file():
     driver.switch_to.frame(iframe_element)
 
     #  === 아이디 입력 (붙여넣기) ===
-    user_id = "lostjack"
-    user_pw = "krx"
-
     id_input = driver.find_element(By.ID, "mbrId")
     id_input.clear()
     id_input.click()

@@ -23,3 +23,6 @@ venv/
 # file
 *.csv
 *.xlsx
+
+# id
+config.*
