@@ -8,6 +8,7 @@ import sys
 import re
 from collections import Counter
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 
 from common import file_manager, get_daily_folder_path, get_today_str
 from component.excel_utils import auto_adjust_column_width
@@ -193,7 +194,7 @@ def getNaverNews():
             col_idx_list = {cell.value: cell.column_letter for cell in ws_list[1]}
             
             if 'title' in col_idx_list:
-                ws_list.column_dimensions[col_idx_list['title']].width = 120
+                ws_list.column_dimensions[col_idx_list['title']].width = 80
             if 'url' in col_idx_list:
                 ws_list.column_dimensions[col_idx_list['url']].width = 25
             if 'press' in col_idx_list:
@@ -209,6 +210,24 @@ def getNaverNews():
             if '빈도수' in col_idx_analysis:
                 ws_analysis.column_dimensions[col_idx_analysis['빈도수']].width = 15
 
+            # 1. 하이퍼링크용 스타일 설정 (파란색 + 밑줄)
+            link_font = Font(color="0000FF", underline="single")
+
+            # 2. 'url' 컬럼이 몇 번째 열인지 확인 (예: col_idx_list에서 가져옴)
+            if 'url' in col_idx_list:
+                url_col_letter = col_idx_list['url'] # 예: 'C'
+                
+                # 3. 데이터가 있는 행(보통 2행부터)을 돌면서 링크 적용
+                # ws_list[url_col_letter]는 해당 열의 모든 셀을 가져옵니다.
+                for cell in ws_list[url_col_letter]:
+                    if cell.row == 1: continue # 제목줄은 건너뜁니다.
+                    
+                    if cell.value and str(cell.value).startswith('http'):
+                        # 하이퍼링크 설정
+                        cell.hyperlink = cell.value
+                        # 글자 색상과 밑줄 스타일 적용
+                        cell.font = link_font
+                        
         print(f"\n성공: 뉴스 데이터가 '{output_filename}' 파일로 저장되었습니다.")
         
     except Exception as e:
